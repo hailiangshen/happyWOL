@@ -27,6 +27,17 @@ module.exports = {
         ctx.body = new ctx.Model.Response(list)
     },
 
+    async getPCStatus(ctx, next) {
+        let config = await ctx.DB.Models.MacConfig.findOne({ ip: ctx.request.body.ip }).exec();
+        if (config) {
+            await ping.promise.probe(config.ip).then(data => {
+                ctx.body = new ctx.Model.Response(data.alive)
+            })
+        } else {
+            ctx.body = new ctx.Model.Response().fail('数据未找到')
+        }
+    },
+
     async createMacConfig(ctx, next){
         let ip = ctx.request.body.ip, userName = ctx.request.body.userName, hostName = ctx.request.body.hostName
         let macArr = await netUtil.findMACByIP(ip)

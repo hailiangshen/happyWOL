@@ -31,6 +31,15 @@ new Vue({
             }).catch(err => {
                 alert(err.message)
             })
+        },
+        getPCStatus(pc) {
+            http.post('api/net/getPCStatus', {
+                ip: pc.ip,
+            }).then((data) => {
+                alert(data ? '在线的呀' : '不在线呀')
+            }).catch(err => {
+                alert(err.message)
+            })
         }
     },
     created() {
