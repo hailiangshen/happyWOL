@@ -6,7 +6,8 @@
   "author": "liya <381254392@qq.com>",
   "license": "MIT",
   "scripts": {
-    "www": "node www/app.js mode=dev"
+    "www": "node www/app.js mode=dev",
+    "pm2:add": "pm2 start ./www/app.js -n wakeOnLan"
   },
   "dependencies": {
     "dgram": "^1.0.1",
