@@ -2,14 +2,13 @@ const mongoose = require('../db')
 
 let HookConfigSchema = mongoose.Schema({
     userName: String,
+    hostName: String,
     mac: {
         type: String,
-        required: [true, 'mac名称必填']
+        required: [true, 'mac地址必填']
     },
-    ip: {
-        type: String,
-        required: [true, 'ip必填']
-    },
+    ip: String,
+    alive: Boolean,
     icon: String,
     comment: String,
     createdAt: Date

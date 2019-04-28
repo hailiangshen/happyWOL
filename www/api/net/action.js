@@ -1,4 +1,5 @@
-const netUtil = require('../../net.util');
+const netUtil = require('../../net.util')
+const ping = require('ping')
 
 module.exports = {
     async netinfo(ctx, next) {
@@ -15,11 +16,19 @@ module.exports = {
 
     async getMyList(ctx, next) {
         let list = await ctx.DB.Models.MacConfig.find({ userName: ctx.query.userName }).exec();
+
+        // 查询是否在线，太耗时间，放在单个接口查
+        // await Promise.all(list.map(x => {
+        //     return ping.promise.probe(x.ip)
+        //     .then(function (res) {
+        //         x.alive = res.alive
+        //     })
+        // }))
         ctx.body = new ctx.Model.Response(list)
     },
 
     async createMacConfig(ctx, next){
-        let ip = ctx.request.body.ip, userName = ctx.request.body.userName
+        let ip = ctx.request.body.ip, userName = ctx.request.body.userName, hostName = ctx.request.body.hostName
         let macArr = await netUtil.findMACByIP(ip)
         let mac = (macArr && macArr.length) ? macArr[0].mac : ''
         if (!mac) {
@@ -29,6 +38,7 @@ module.exports = {
                 userName,
                 ip,
                 mac,
+                hostName,
                 createdAt: new Date()
             })
             let res = await ctx.DB.Models.MacConfig.create(model)

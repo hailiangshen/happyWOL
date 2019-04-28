@@ -15,7 +15,8 @@ new Vue({
         createCurrent() {
             http.post('api/net/createMacConfig', {
                 ip: this.myNetInfo.ip,
-                userName: 'anonymous'
+                userName: 'anonymous',
+                hostName: 'greedyPC'
             }).then((data) => {
                 alert('success')
             }).catch(err => {
