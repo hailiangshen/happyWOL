@@ -8,8 +8,9 @@ http.interceptors.response.use(function (response) {
 new Vue({
     el: '#app',
     data: {
+        isLocal: window.location.hostname != 'xbtech.schoolis.cn',
         macList: [],
-        myNetInfo: {},
+        myNetInfo: null,
     },
     computed: {
 
@@ -71,20 +72,26 @@ new Vue({
         },
         getNetinfo() {
             return http.get('api/net/netinfo').then((data) => {
-                if (!this.macList.some(x => x.id == data.ip)) {
+                let cur = this.macList.find(x => x.ip == data.ip)
+                if (!cur) {
                     this.myNetInfo = data;
                     // this.myNetInfo = {
                     //     ip: '192.168.3.3',
                     //     mac: 'asdasfasfasf',
                     //     hostName: 'greedy'
                     // }
+                } else {
+                    cur.current = true
                 }
+            }).catch(err => {
+
             })
         }
     },
     created() {
+
         this.queryData().then(() => {
-            this.getNetinfo()
+            this.isLocal && this.getNetinfo()
         })
     }
 })

@@ -79,4 +79,43 @@ module.exports = {
             ctx.body = new ctx.Model.Response().fail('数据未找到')
         }
     },
+
+    async quickToAdd(ctx, next) {
+
+        try {
+            let ip = ctx.ip.replace('::ffff:', '')
+            let hostInfo = await netUtil.ping(ip)
+            let macArr = await netUtil.findMACByIP(ip)
+            let mac = (macArr && macArr.length) ? macArr[0].mac : ''
+
+            if (!mac) {
+                ctx.body = new ctx.Model.Response().fail('无法获取MAC地址，请确保在内网访问')
+            } else {
+                let config = await ctx.DB.Models.MacConfig.findOne({ mac }).exec();
+                if (config) {
+                    return ctx.body = new ctx.Model.Response().fail('你已经加入组织啦')
+                }
+
+                let model = new ctx.DB.Models.MacConfig({
+                    userName: 'anonymous',
+                    ip,
+                    mac,
+                    hostInfo: hostInfo.hostName,
+                    createdAt: new Date()
+                })
+
+                let validateError = model.validateSync()
+                if (validateError) {
+                    return ctx.body = new ctx.Model.Response().fail(Object.values(validateError.errors)[0].message)
+                }
+
+                let res = await ctx.DB.Models.MacConfig.create(model)
+                ctx.body = new ctx.Model.Response(res.id, '创建成功')
+            }
+
+
+        } catch (err) {
+            ctx.body = new ctx.Model.Response().fail(err)
+        }
+    }
 }

@@ -51,7 +51,8 @@ let ping = (ip) => {
     return new Promise((res, rej) => {
         let process = exec(`ping -a ${ip}`, {
             encoding: 'buffer',
-            timeout: 10000
+            timeout: 1000 * 15, // 内网ping讲道理5秒就可以了
+            windowsHide: true
         }, (err, stdout, stderr) => {
                 if (err) {
                     console.error(err)
@@ -90,7 +91,8 @@ let findMacByIP = (ip) => {
             return rej(`<${ip}> ip地址不合法`)
         }
         exec(`arp -a ${ip}`, {
-            encoding: 'buffer'
+            encoding: 'buffer',
+            windowsHide: true
         }, (err, stdout, stderr) => {
                 if (err) {
                     console.error(err)
