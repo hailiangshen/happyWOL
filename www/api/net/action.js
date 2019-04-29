@@ -20,6 +20,9 @@ module.exports = {
 
     async getMyList(ctx, next) {
         let list = await ctx.DB.Models.MacConfig.find({ userName: ctx.query.userName }).exec();
+        list.forEach(x => {
+            x.mac = x.mac.replace(/(\S{6})(\S{5})/, '$1*****')
+        })
         // 查询是否在线，太耗时间，放在单个接口查
         // await Promise.all(list.map(x => {
         //     return ping.promise.probe(x.ip)
@@ -57,7 +60,8 @@ module.exports = {
                 ip,
                 mac,
                 hostName,
-                createdAt: new Date()
+                createdAt: new Date(),
+                comment: ''
             })
 
             let validateError = model.validateSync()
@@ -71,7 +75,7 @@ module.exports = {
     },
 
     async wakeOnLan(ctx, next) {
-        let config = await ctx.DB.Models.MacConfig.findOne({ mac: ctx.request.body.mac }).exec();
+        let config = await ctx.DB.Models.MacConfig.findOne({ _id: ctx.request.body.id }).exec();
         if (config) {
             let result = await netUtil.wakeOnLan(config.mac.replace(/\-/g, ''))
             ctx.body = new ctx.Model.Response(null, 'success')
@@ -101,7 +105,8 @@ module.exports = {
                     ip,
                     mac,
                     hostInfo: hostInfo.hostName,
-                    createdAt: new Date()
+                    createdAt: new Date(),
+                    comment: ''
                 })
 
                 let validateError = model.validateSync()

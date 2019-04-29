@@ -29,7 +29,7 @@ new Vue({
         },
         wakeOnLan(pc) {
             http.post('api/net/wakeOnLan', {
-                mac: pc.mac,
+                id: pc._id,
             }).then((data) => {
                 alert('success')
             }).catch(err => {
