@@ -1,22 +1,25 @@
 const netUtil = require('../../net.util')
-const ping = require('ping')
 
 module.exports = {
     async netinfo(ctx, next) {
-        let ip = ctx.ip.replace('::ffff:', '')
-        let macArr = await netUtil.findMACByIP(ip)
-        let mac = (macArr && macArr.length) ? macArr[0].mac : ''
+        try {
+            let ip = ctx.ip.replace('::ffff:', '')
+            let hostInfo = await netUtil.ping(ip)
+            let macArr = await netUtil.findMACByIP(ip)
+            let mac = (macArr && macArr.length) ? macArr[0].mac : ''
 
-        ctx.body = new ctx.Model.Response({
-            ip,
-            mac,
-            host: ''
-        })
+            ctx.body = new ctx.Model.Response({
+                ip,
+                mac,
+                hostName: hostInfo.hostName
+            })
+        } catch (err) {
+            ctx.body = new ctx.Model.Response().fail(err)
+        }
     },
 
     async getMyList(ctx, next) {
         let list = await ctx.DB.Models.MacConfig.find({ userName: ctx.query.userName }).exec();
-
         // 查询是否在线，太耗时间，放在单个接口查
         // await Promise.all(list.map(x => {
         //     return ping.promise.probe(x.ip)
@@ -30,9 +33,13 @@ module.exports = {
     async getPCStatus(ctx, next) {
         let config = await ctx.DB.Models.MacConfig.findOne({ ip: ctx.request.body.ip }).exec();
         if (config) {
-            await ping.promise.probe(config.ip).then(data => {
+            try {
+                let data = await netUtil.ping(config.ip)
                 ctx.body = new ctx.Model.Response(data.alive)
-            })
+            } catch (err) {
+                ctx.body = new ctx.Model.Response(false).fail(err)
+            }
+
         } else {
             ctx.body = new ctx.Model.Response().fail('数据未找到')
         }
@@ -52,6 +59,12 @@ module.exports = {
                 hostName,
                 createdAt: new Date()
             })
+
+            let validateError = model.validateSync()
+            if (validateError) {
+                return ctx.body = new ctx.Model.Response().fail(Object.values(validateError.errors)[0].message)
+            }
+
             let res = await ctx.DB.Models.MacConfig.create(model)
             ctx.body = new ctx.Model.Response(null, res.id)
         }

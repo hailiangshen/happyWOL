@@ -1,0 +1,64 @@
+ul li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pcContainer{
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.pcView{
+    padding: 70px 10px 10px 10px;
+    background: url(./resource/pc.online.png) center 10px no-repeat;
+    background-size: 50px 50px;
+    border: 1px solid #efefef;
+    cursor: default;
+    width: 200px;
+    margin: 5px;
+}
+
+.pcView.offline{
+    background-image: url(./resource/pc.offline.png)
+}
+
+.noStatus{
+    cursor: progress;
+}
+
+/* .online::before, .offline::before{
+    content: " ";
+    display: inline-block;
+    margin-right: 5px;
+    width: 9px;
+    height: 9px;
+    background-color: greenyellow;
+    border-radius: 9px;
+}
+
+.offline::before{
+    background-color: gray;
+} */
+
+.labelText{
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.pcName{
+    margin-bottom: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.ctrlBtn{
+    text-align: center;
+    padding: 5px;
+}
+
+.btn{
+    cursor: pointer;
+}

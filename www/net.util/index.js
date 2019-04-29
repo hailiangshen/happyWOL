@@ -4,6 +4,10 @@ const dgram = require('dgram')
 const { exec } = require('child_process')
 const iconv = require('iconv-lite')
 
+let ipReg = /((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))/
+let ipFullReg = /^((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))$/
+let macReg = /(([\da-f]{2}\-){5}[\da-f]{2})/
+
 let makeMagicPacket = (mac) => {
     let hex = "".padEnd(12, 'F')
 
@@ -39,14 +43,47 @@ let initSocket = (mac) => {
     })
 }
 
-// initSocket("B083FE86EB87")
-// initSocket("54E1AD9DF696")
+let ping = (ip) => {
+    if (!ipFullReg.test(ip)) {
+        return Promise.reject(`<${ip}> ip地址不合法`)
+    }
+
+    return new Promise((res, rej) => {
+        let process = exec(`ping -a ${ip}`, {
+            encoding: 'buffer',
+            timeout: 10000
+        }, (err, stdout, stderr) => {
+                if (err) {
+                    console.error(err)
+                    if (err.signal == 'SIGTERM') {
+                        rej('查询超时')
+                    } else {
+                        rej(err.message)
+                    }
+                } else {
+                    // 正在 Ping DESKTOP-GS5JOV1 [192.168.50.127] 具有 32 字节的数据:
+                    // 192.168.50.127 的 Ping 统计信息:数据包: 已发送 = 4，已接收 = 4，丢失 = 0 (0% 丢失)，
+                    let data = iconv.decode(stdout, 'gbk')
+                    if (data.includes('无法访问目标主机') || data.includes('请求超时')) {
+                        res({
+                            alive: false
+                        })
+                    } else {
+                        let $host = new RegExp(`正在 Ping (\\S*) \\[${ip}\\]`).exec(data)
+                        let $ping = /数据包: [^\d]*(\d)[^\d]*(\d)[^\d]*(\d)/.exec(data)
+                        res({
+                            ip,
+                            hostName: $host ? $host[1] : '',
+                            alive: true,
+                            ping: $ping[0]
+                        })
+                    }
+                }
+        })
+    })
+}
 
 let findMacByIP = (ip) => {
-
-    let ipReg = /((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))/
-    let ipFullReg = /^((25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))\.){3}(25[0-5]|2[0-4]\d|((1\d{2})|([1-9]?\d)))$/
-    let macReg = /(([\da-f]{2}\-){5}[\da-f]{2})/
 
     return new Promise((res, rej) => {
         if (ip && !ipFullReg.test(ip)) {
@@ -90,5 +127,8 @@ module.exports = {
     },
     findMACByIP(address) {
         return findMacByIP(address)
+    },
+    ping(address) {
+        return ping(address)
     }
 }

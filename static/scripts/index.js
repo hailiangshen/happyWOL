@@ -11,12 +11,15 @@ new Vue({
         macList: [],
         myNetInfo: {},
     },
+    computed: {
+
+    },
     methods: {
         createCurrent() {
             http.post('api/net/createMacConfig', {
                 ip: this.myNetInfo.ip,
                 userName: 'anonymous',
-                hostName: 'greedyPC'
+                hostName: this.myNetInfo.hostName
             }).then((data) => {
                 alert('success')
             }).catch(err => {
@@ -33,25 +36,55 @@ new Vue({
             })
         },
         getPCStatus(pc) {
-            http.post('api/net/getPCStatus', {
-                ip: pc.ip,
-            }).then((data) => {
-                alert(data ? '在线的呀' : '不在线呀')
-            }).catch(err => {
-                alert(err.message)
+            if (pc.$statusTimer || pc.aliveStatus == 1 || (pc.$lastGetTime && (pc.$lastGetTime + 1000 * 30 > new Date().getTime()))) {
+                return;
+            }
+            pc.$statusTimer = setTimeout(() => {
+                http.post('api/net/getPCStatus', {
+                    ip: pc.ip,
+                }).then((data) => {
+                    pc.aliveStatus = data ? 1 : 0
+                }).catch(err => {
+                    // alert(err.message)
+                    pc.aliveStatus = 0;
+                }).then(() => {
+                    pc.$statusTimer = null
+                })
+            }, 300)
+            pc.$lastGetTime = new Date().getTime();
+        },
+        removePCStatus(pc) {
+            if (pc.$statusTimer) {
+                window.clearTimeout(pc.$statusTimer)
+                pc.$statusTimer = null
+            }
+        },
+        queryData() {
+            return http.get('api/net/getMyList', {
+                params: {
+                    userName: 'anonymous'
+                }
+            }).then(data => {
+                data.forEach(x => x.aliveStatus = -1)
+                this.macList = data;
+            })
+        },
+        getNetinfo() {
+            return http.get('api/net/netinfo').then((data) => {
+                if (!this.macList.some(x => x.id == data.ip)) {
+                    this.myNetInfo = data;
+                    // this.myNetInfo = {
+                    //     ip: '192.168.3.3',
+                    //     mac: 'asdasfasfasf',
+                    //     hostName: 'greedy'
+                    // }
+                }
             })
         }
     },
     created() {
-        http.get('api/net/netinfo').then((data) => {
-            this.myNetInfo = data;
-        })
-        http.get('api/net/getMyList', {
-            params: {
-                userName: 'anonymous'
-            }
-        }).then(data => {
-            this.macList = data;
+        this.queryData().then(() => {
+            this.getNetinfo()
         })
     }
 })

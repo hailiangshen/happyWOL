@@ -9,22 +9,37 @@
 <body>
     <div id="app">
         <div>
-            <ul>
-                <li v-for="pc in macList" @click="getPCStatus(pc)">
-                    <span>{{pc.userName}}</span>
-                    <span>{{pc.ip}}</span>
-                    <span>{{pc.mac}}</span>
-                    <span v-if="false">{{pc.alive ? 'online' : 'offline'}}</span>
-                    <span>
-                        <button type="button" @click="wakeOnLan(pc)">起飞</button>
-                    </span>
-                </li>
-                <li v-if="myNetInfo && myNetInfo.mac">
-                    <div>
-                        <span>{{myNetInfo.ip}}</span>
-                        <span>{{myNetInfo.mac}}</span>
+            <ul class="pcContainer">
+                <li v-for="pc in macList" @mouseenter="getPCStatus(pc)" @mouseleave="removePCStatus(pc)" :class="{noStatus: pc.aliveStatus == -1, pcView: true, online: pc.aliveStatus == 1, offline: pc.aliveStatus == 0}">
+                    <div class="labelText pcName">
+                        <span>{{pc.hostName || '某一台电脑'}}</span><span v-if="pc.aliveStatus != -1">{{pc.aliveStatus == 1 ? '(在线)' : '(离线)'}}</span>
                     </div>
-                    <button type="button" @click="createCurrent()">添加当前记录</button>
+                    <div class="labelText">
+                        <span>IP：{{pc.ip}}</span>
+                    </div>
+                    <div class="labelText">
+                        <span>MAC：{{pc.mac}}</span>
+                    </div>
+                    <div class="labelText" v-if="pc.comment">
+                        <pre>{{pc.comment}}</pre>
+                    </div>
+                    <div class="labelText ctrlBtn">
+                        <button type="button" @click="wakeOnLan(pc)" class="btn">开机！</button>
+                    </div>
+                </li>
+                <li v-if="myNetInfo && myNetInfo.ip" class="pcView">
+                    <div class="labelText pcName">
+                        <span>{{myNetInfo.hostName || 'Unknown'}}</span><span>(我的电脑)</span>
+                    </div>
+                    <div class="labelText">
+                        <span>IP：{{myNetInfo.ip}}</span>
+                    </div>
+                    <div class="labelText">
+                        <span>MAC：{{myNetInfo.mac || 'Unknown'}}</span>
+                    </div>
+                    <div class="labelText ctrlBtn">
+                        <button type="button" @click="createCurrent()" class="btn">添加当前记录</button>
+                    </div>
                 </li>
             </ul>
         </div>
