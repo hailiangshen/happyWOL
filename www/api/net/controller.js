@@ -7,5 +7,6 @@ router.get('/getMyList', action.getMyList)
 router.post('/createMacConfig', action.createMacConfig)
 router.post('/wakeOnLan', action.wakeOnLan)
 router.post('/getPCStatus', action.getPCStatus)
+router.get('/quickToAdd', action.quickToAdd)
 
 module.exports = router

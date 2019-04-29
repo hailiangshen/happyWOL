@@ -19,6 +19,15 @@ ul li {
     cursor: default;
     width: 200px;
     margin: 5px;
+    transition: .3s .1s;
+}
+
+.pcView:hover{
+    webkit-box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    -webkit-transform: translateY(-3px);
+    -ms-transform: translateY(-3px);
+    transform: translateY(-3px);
 }
 
 .pcView.offline{
@@ -27,6 +36,16 @@ ul li {
 
 .noStatus{
     cursor: progress;
+}
+
+.currentPC::before{
+    content: " ";
+    display: inline-block;
+    margin-right: 5px;
+    width: 9px;
+    height: 9px;
+    background-color: greenyellow;
+    border-radius: 9px;
 }
 
 /* .online::before, .offline::before{
@@ -52,6 +71,9 @@ ul li {
     margin-bottom: 5px;
     text-align: center;
     font-weight: bold;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .ctrlBtn{

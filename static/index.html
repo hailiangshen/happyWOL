@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <link href="/index.css" rel="stylesheet">
+    <link href="index.css" rel="stylesheet">
 </head>
 <body>
     <div id="app">
@@ -12,7 +12,8 @@
             <ul class="pcContainer">
                 <li v-for="pc in macList" @mouseenter="getPCStatus(pc)" @mouseleave="removePCStatus(pc)" :class="{noStatus: pc.aliveStatus == -1, pcView: true, online: pc.aliveStatus == 1, offline: pc.aliveStatus == 0}">
                     <div class="labelText pcName">
-                        <span>{{pc.hostName || '某一台电脑'}}</span><span v-if="pc.aliveStatus != -1">{{pc.aliveStatus == 1 ? '(在线)' : '(离线)'}}</span>
+                        <span :class="{currentPC: pc.current}">{{pc.hostName || '某一台电脑'}}</span>
+                        <span v-if="pc.aliveStatus != -1">{{pc.aliveStatus == 1 ? '(在线)' : '(离线)'}}</span>
                     </div>
                     <div class="labelText">
                         <span>IP：{{pc.ip}}</span>
@@ -23,11 +24,11 @@
                     <div class="labelText" v-if="pc.comment">
                         <pre>{{pc.comment}}</pre>
                     </div>
-                    <div class="labelText ctrlBtn">
+                    <div class="labelText ctrlBtn" v-if="pc.aliveStatus != 1">
                         <button type="button" @click="wakeOnLan(pc)" class="btn">开机！</button>
                     </div>
                 </li>
-                <li v-if="myNetInfo && myNetInfo.ip" class="pcView">
+                <li v-if="myNetInfo && myNetInfo.mac" class="pcView">
                     <div class="labelText pcName">
                         <span>{{myNetInfo.hostName || 'Unknown'}}</span><span>(我的电脑)</span>
                     </div>
@@ -43,9 +44,12 @@
                 </li>
             </ul>
         </div>
+        <div v-if="!isLocal">
+            <a href="http://192.168.50.210:7777/api/net/quickToAdd" target="_bind">没有我的电脑!我要去登记!</a>
+        </div>
     </div>
 </body>
-<script src="/scripts/axios.min.js"></script>
-<script src="/scripts/vue.min.js"></script>
-<script src="/scripts/index.js"></script>
+<script src="scripts/axios.min.js"></script>
+<script src="scripts/vue.min.js"></script>
+<script src="scripts/index.js"></script>
 </html>
