@@ -7,8 +7,11 @@ let HookConfigSchema = mongoose.Schema({
         type: String,
         required: [true, 'mac地址必填']
     },
+    aliveStatus: {
+        type: Number,
+        default: -1,
+    },
     ip: String,
-    alive: Boolean,
     icon: String,
     comment: String,
     createdAt: Date
